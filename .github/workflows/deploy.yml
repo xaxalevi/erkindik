@@ -2,29 +2,38 @@ name: Deploy Flutter Web to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+
+permissions:
+  contents: write   # нужно, чтобы пушить в gh-pages
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.6'   # ← твоя версия Flutter
+          channel: stable
+          flutter-version: '3.35.6'   # твоя локальная версия
 
-      - name: Install dependencies
-        run: flutter pub get
+      - run: flutter --version
+      - run: flutter pub get
 
-      - name: Build Web
-        run: flutter build web --release
+      # Сборка web. Без устаревших флагов. (Хочешь — добавь --wasm)
+      - run: flutter build web --release --base-href /erkindik/
+        # если хочешь wasm: flutter build web --release --wasm --base-href /erkindik/
+
+      # SPA-фоллбек для GitHub Pages (иначе при refresh будет 404)
+      - name: SPA 404 fallback
+        run: cp build/web/index.html build/web/404.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
           publish_dir: ./build/web
