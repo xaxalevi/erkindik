@@ -15,11 +15,16 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.6' # <= ОЧЕНЬ ВАЖНО: ставим твою версию (3.35.6)
-      
-      - run: flutter pub get
+          flutter-version: '3.35.6'   # ← ставим твою версию
 
-      - run: flutter build web --release --web-renderer canvaskit
+      - name: Enable WASM web support
+        run: flutter config --enable-wasm
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Web
+        run: flutter build web --release --wasm
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
